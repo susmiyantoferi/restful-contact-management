@@ -3,9 +3,11 @@ package projectjava.belajar.resfullapi.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import projectjava.belajar.resfullapi.entity.User;
 import projectjava.belajar.resfullapi.model.LoginUserRequest;
 import projectjava.belajar.resfullapi.model.TokenResponse;
 import projectjava.belajar.resfullapi.model.WebResponse;
@@ -24,5 +26,15 @@ public class AuthController {
     WebResponse<TokenResponse> login (@RequestBody LoginUserRequest request){
         TokenResponse tokenResponse = authService.login(request);
         return WebResponse.<TokenResponse>builder().data(tokenResponse).build();
+    }
+
+
+    @DeleteMapping(
+            path ="/api/auth/logout",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    WebResponse<String> logout(User user){
+        authService.logout(user);
+        return WebResponse.<String>builder().data("OK").build();
     }
 }
