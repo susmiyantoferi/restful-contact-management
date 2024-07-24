@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import projectjava.belajar.resfullapi.entity.User;
 import projectjava.belajar.resfullapi.model.RegisterUserRequest;
+import projectjava.belajar.resfullapi.model.UpdateUserRequest;
 import projectjava.belajar.resfullapi.model.UserResponse;
 import projectjava.belajar.resfullapi.model.WebResponse;
 import projectjava.belajar.resfullapi.repository.UserRepository;
@@ -207,6 +208,65 @@ class UserControllerTest {
             assertNotNull(response.getErrors());
 
 
+        });
+    }
+
+    @Test
+    void updateUserUnauthorized() throws Exception {
+        UpdateUserRequest request = new UpdateUserRequest();
+
+        mockMvc.perform(
+                patch("/api/users/current")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+
+        ).andExpectAll(
+                status().isBadRequest()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNotNull(response.getErrors());
+        });
+    }
+
+
+    @Test
+    void updateUserSuccess() throws Exception {
+        User user = new User();
+        user.setUsername("test");
+        user.setName("Test");
+        user.setToken("qwerty");
+        user.setPassword(BCrypt.hashpw("rahasia", BCrypt.gensalt()));
+        user.setTokenExpiredAt(System.currentTimeMillis() + 10000000L);
+        userRepository.save(user);
+
+        //update data
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setName("feri");
+        request.setPassword("feri123");
+
+        mockMvc.perform(
+                patch("/api/users/current")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "qwerty")
+
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<UserResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNull(response.getErrors());
+            assertEquals("test", response.getData().getUsername());
+            assertEquals("feri", response.getData().getName());
+
+            User userDb = userRepository.findById("test").orElse(null);
+            assertNotNull(userDb);
+            assertTrue(BCrypt.checkpw("feri123", userDb.getPassword()) );
         });
     }
 }

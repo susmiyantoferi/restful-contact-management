@@ -5,10 +5,10 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import projectjava.belajar.resfullapi.entity.User;
 import projectjava.belajar.resfullapi.model.RegisterUserRequest;
+import projectjava.belajar.resfullapi.model.UpdateUserRequest;
 import projectjava.belajar.resfullapi.model.UserResponse;
 import projectjava.belajar.resfullapi.model.WebResponse;
 import projectjava.belajar.resfullapi.service.UserService;
-
 
 
 @RestController
@@ -22,7 +22,7 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<String> webResponse(@RequestBody RegisterUserRequest request){
+    public WebResponse<String> webResponse(@RequestBody RegisterUserRequest request) {
         userService.register(request);
         return WebResponse.<String>builder().data("OK").build();
     }
@@ -31,8 +31,19 @@ public class UserController {
             path = "/api/users/current",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public WebResponse<UserResponse> get(User user){
+    public WebResponse<UserResponse> get(User user) {
         UserResponse userResponse = userService.get(user);
+        return WebResponse.<UserResponse>builder().data(userResponse).build();
+    }
+
+
+    @PatchMapping(
+            path = "/api/users/current",
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public WebResponse<UserResponse> update(User user, @RequestBody UpdateUserRequest request) {
+        UserResponse userResponse = userService.update(user, request);
         return WebResponse.<UserResponse>builder().data(userResponse).build();
     }
 }
