@@ -6,14 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class WebResponse<T> {
+public class PagingResponse {
 
-    private  T data;
+    private Integer currentPage;
 
-    private String errors;
+    private Integer totalPage;
 
-    private PagingResponse paging;
+    private Integer size;
+
 }
