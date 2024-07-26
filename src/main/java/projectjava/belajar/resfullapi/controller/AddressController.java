@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import projectjava.belajar.resfullapi.entity.User;
 import projectjava.belajar.resfullapi.model.AddressResponse;
 import projectjava.belajar.resfullapi.model.CreateAddressRequest;
+import projectjava.belajar.resfullapi.model.UpdateAddressRequest;
 import projectjava.belajar.resfullapi.model.WebResponse;
 import projectjava.belajar.resfullapi.service.AddressService;
 
@@ -39,6 +40,23 @@ public class AddressController {
                                             @PathVariable("addressId") String addressId){
 
         AddressResponse addressResponse = addressService.get(user, contactId, addressId);
+        return WebResponse.<AddressResponse>builder().data(addressResponse).build();
+
+    }
+
+    @PutMapping(
+            path = "api/contacts/{contactId}/addresses/{addressId}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public WebResponse<AddressResponse> update(User user,
+                                               @RequestBody UpdateAddressRequest request,
+                                               @PathVariable("contactId") String contactId,
+                                               @PathVariable("addressId") String addressId){
+        request.setContactId(contactId);
+        request.setAddressId(addressId);
+
+        AddressResponse addressResponse = addressService.update(user, request);
         return WebResponse.<AddressResponse>builder().data(addressResponse).build();
 
     }

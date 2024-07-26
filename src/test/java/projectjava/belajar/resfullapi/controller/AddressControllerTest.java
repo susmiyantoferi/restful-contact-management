@@ -14,6 +14,7 @@ import projectjava.belajar.resfullapi.entity.Contact;
 import projectjava.belajar.resfullapi.entity.User;
 import projectjava.belajar.resfullapi.model.AddressResponse;
 import projectjava.belajar.resfullapi.model.CreateAddressRequest;
+import projectjava.belajar.resfullapi.model.UpdateAddressRequest;
 import projectjava.belajar.resfullapi.model.WebResponse;
 import projectjava.belajar.resfullapi.repository.AddressRepository;
 import projectjava.belajar.resfullapi.repository.ContactRepository;
@@ -182,5 +183,74 @@ class AddressControllerTest {
             assertEquals(address.getCountry(), response.getData().getCountry());
             assertEquals(address.getPostalCode(), response.getData().getPostalCode());
         });
+    }
+
+    @Test
+    void updateAddressBadRequest() throws Exception {
+        UpdateAddressRequest request = new UpdateAddressRequest();
+        request.setCountry("");
+
+        mockMvc.perform(
+                put("/api/contacts/test/addresses/test")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "token")
+
+        ).andExpectAll(
+                status().isBadRequest()
+        ).andDo(result -> {
+            WebResponse<String> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNotNull(response.getErrors());
+        });
+
+    }
+
+    @Test
+    void updateAddressSuccess() throws Exception {
+        Contact contact = contactRepository.findById("test").orElseThrow();
+
+        Address address = new Address();
+        address.setId(UUID.randomUUID().toString());
+        address.setContact(contact);
+        address.setStreet("jalan jalan");
+        address.setCity("jakarta");
+        address.setProvince("jawa");
+        address.setCountry("indonesia");
+        address.setPostalCode("438769");
+        addressRepository.save(address);
+
+        UpdateAddressRequest request = new UpdateAddressRequest();
+        request.setStreet("test");
+        request.setCity("test");
+        request.setProvince("test");
+        request.setCountry("test");
+        request.setPostalCode("12345");
+
+        mockMvc.perform(
+                put("/api/contacts/test/addresses/" + address.getId())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .header("X-API-TOKEN", "token")
+
+        ).andExpectAll(
+                status().isOk()
+        ).andDo(result -> {
+            WebResponse<AddressResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNull(response.getErrors());
+            assertEquals(request.getStreet(), response.getData().getStreet());
+            assertEquals(request.getCity(), response.getData().getCity());
+            assertEquals(request.getProvince(), response.getData().getProvince());
+            assertEquals(request.getCountry(), response.getData().getCountry());
+            assertEquals(request.getPostalCode(), response.getData().getPostalCode());
+
+            assertTrue(addressRepository.existsById(response.getData().getId()));
+        });
+
     }
 }

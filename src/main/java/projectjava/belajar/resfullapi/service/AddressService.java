@@ -11,6 +11,8 @@ import projectjava.belajar.resfullapi.entity.Contact;
 import projectjava.belajar.resfullapi.entity.User;
 import projectjava.belajar.resfullapi.model.AddressResponse;
 import projectjava.belajar.resfullapi.model.CreateAddressRequest;
+import projectjava.belajar.resfullapi.model.UpdateAddressRequest;
+import projectjava.belajar.resfullapi.model.UpdateContactRequest;
 import projectjava.belajar.resfullapi.repository.AddressRepository;
 import projectjava.belajar.resfullapi.repository.ContactRepository;
 import projectjava.belajar.resfullapi.repository.UserRepository;
@@ -67,6 +69,25 @@ public class AddressService {
 
         Address address = addressRepository.findFirstByContactAndId(contact, addressId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address is not found"));
+
+        return toAddressResponse(address);
+    }
+
+    @Transactional
+    public AddressResponse update(User user, UpdateAddressRequest request){
+        validationService.validation(request);
+        Contact contact = contactRepository.findFirstByUserAndId(user, request.getContactId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact is not found"));
+
+        Address address = addressRepository.findFirstByContactAndId(contact, request.getAddressId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address is not found"));
+
+        address.setStreet(request.getStreet());
+        address.setCity(request.getCity());
+        address.setProvince(request.getProvince());
+        address.setCountry(request.getCountry());
+        address.setPostalCode(request.getPostalCode());
+        addressRepository.save(address);
 
         return toAddressResponse(address);
     }
