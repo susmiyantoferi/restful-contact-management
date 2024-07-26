@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.server.ResponseStatusException;
 import projectjava.belajar.resfullapi.entity.Address;
 import projectjava.belajar.resfullapi.entity.Contact;
@@ -57,6 +58,17 @@ public class AddressService {
                 .province(address.getProvince())
                 .postalCode(address.getPostalCode())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public AddressResponse get(User user, String contactId, String addressId){
+        Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact is not found"));
+
+        Address address = addressRepository.findFirstByContactAndId(contact, addressId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Address is not found"));
+
+        return toAddressResponse(address);
     }
 
 }
